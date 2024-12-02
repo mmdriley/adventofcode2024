@@ -26,7 +26,8 @@ with open('inputs/02.txt') as f:
     report = [int(x) for x in l.split()]
     if is_safe(report):
       c1 += 1
-    if is_safe_after_problem_dampener(report):
+      c2 += 1
+    elif is_safe_after_problem_dampener(report):
       c2 += 1
 
 # part 1
