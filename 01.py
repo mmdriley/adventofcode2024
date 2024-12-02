@@ -19,8 +19,6 @@ s = 0
 for (x, y) in zip(a1, a2):
   s += abs(x - y)
 
-print(s)
-
 # part 2
 
 c2 = Counter(a2)
