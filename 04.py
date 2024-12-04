@@ -27,8 +27,7 @@ for i in range(1, len(wordsearch) - 1):
     if wordsearch[i][j] != word[0]:
       continue
 
-    for move in moves:
-      (di, dj) = move
+    for (di, dj) in moves:
       for k in range(1, len(word)):
         (ii, jj) = (i + k * di, j + k * dj)
         if wordsearch[ii][jj] != word[k]:
