@@ -1,6 +1,6 @@
 import itertools
 
-with open('inputs/04.txt') as f:
+with open('04.txt') as f:
   wordsearch = f.readlines()
 
 # surround with `#`

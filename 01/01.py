@@ -3,7 +3,7 @@ from collections import Counter
 a1: list[int] = []
 a2: list[int] = []
 
-with open('inputs/01.txt') as f:
+with open('01.txt') as f:
   for l in f:
     fields = l.split()
     a1.append(int(fields[0]))

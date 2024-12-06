@@ -5,7 +5,7 @@ rules: list[tuple[int, int]] = []
 updates: list[list[int]] = []
 
 
-with open('inputs/05.txt') as f:
+with open('05.txt') as f:
   for l in f:
     if l == '\n':
       break

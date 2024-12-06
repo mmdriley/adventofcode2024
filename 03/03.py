@@ -1,6 +1,6 @@
 import re
 
-with open('inputs/03.txt') as f:
+with open('03.txt') as f:
   contents = f.read()
 
 total = 0

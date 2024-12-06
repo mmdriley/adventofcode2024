@@ -21,7 +21,7 @@ def is_safe_after_problem_dampener(r: list[int]):
 
 c1 = 0
 c2 = 0
-with open('inputs/02.txt') as f:
+with open('02.txt') as f:
   for l in f:
     report = [int(x) for x in l.split()]
     if is_safe(report):
