@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 with open('06.txt') as f:
   lines = [l.strip() for l in f]
 
@@ -21,19 +24,17 @@ for starti, l in enumerate(lines):
   break
 
 
-def walk():
-  path: set[tuple[int, int, int]] = set()
+obstacle_positions_creating_cycles: set[tuple[int, int]] = set()
 
-  def covered():
-    return set([(i, j) for (i, j, _) in path])
 
-  i, j = starti, startj
-  assert(lines[i][j] == '^')
+# returns number of positions covered by the walk or
+# None if the walk results in a cycle
+def walk(i, j, guarddir, nested = False):
+  path: dict[tuple[int, int], list[int]] = defaultdict(list)
 
   # `guarddir` is an index into guardmoves
   # turning 90 degrees right is (dir+1)%4
   guardmoves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-  guarddir = 0
 
   while True:
     (di, dj) = guardmoves[guarddir]
@@ -41,38 +42,34 @@ def walk():
 
     match lines[nexti][nextj]:
       case '%':
-        return covered(), False
-      case '.' | '^':
+        return len(path)
+      case '.' | '^' as original:
+        if not nested and original == '.' and (nexti, nextj) not in path:
+          # try putting an obstacle out there first
+          lines[nexti][nextj] = '#'
+          r = walk(i, j, guarddir, True)
+          if r is None:
+            obstacle_positions_creating_cycles.add((nexti, nextj))
+          lines[nexti][nextj] = '.'
+
         i, j = nexti, nextj
-        if (i, j, guarddir) in path:
-          return covered(), True
-        path.add((i, j, guarddir))
+        if guarddir in path[(i, j)]:
+          return None
+        path[(i, j)].append(guarddir)
       case '#':
         guarddir = (guarddir + 1) % 4
-        path.add((i, j, guarddir))
+        path[(i, j)].append(guarddir)
       case _:
-        print(lines[nexti][nextj])
         raise ValueError()
 
 
 # part 1
 
-covered_unblocked, is_cycle = walk()
-assert(not is_cycle)
-print(len(covered_unblocked))
+assert(lines[starti][startj] == '^')
+numcovered = walk(starti, startj, 0)
+print(numcovered)
 
 
 # part 2
 
-cycles = 0
-for (i, j) in covered_unblocked:
-  if lines[i][j] != '.':
-    continue
-
-  lines[i][j] = '#'
-  _, is_cycle = walk()
-  if is_cycle:
-    cycles += 1
-  lines[i][j] = '.'
-
-print(cycles)
+print(len(obstacle_positions_creating_cycles))
