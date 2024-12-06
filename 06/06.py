@@ -42,12 +42,12 @@ def walk():
     match lines[nexti][nextj]:
       case '%':
         return covered(), False
-      case 'X' | '.' | '^':
+      case '.' | '^':
         i, j = nexti, nextj
         if (i, j, guarddir) in path:
           return covered(), True
         path.add((i, j, guarddir))
-      case '#' | 'O':
+      case '#':
         guarddir = (guarddir + 1) % 4
         path.add((i, j, guarddir))
       case _:
@@ -69,7 +69,7 @@ for (i, j) in covered_unblocked:
   if lines[i][j] != '.':
     continue
 
-  lines[i][j] = 'O'
+  lines[i][j] = '#'
   _, is_cycle = walk()
   if is_cycle:
     cycles += 1
