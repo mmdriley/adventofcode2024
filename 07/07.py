@@ -6,41 +6,36 @@ with open('07.txt') as f:
     equations.append((int(target), [int(s) for s in operands.split(' ')]))
 
 
-def evaluate(operands: list[int], opnum: int, n_ops: int) -> int:
-  n = operands[0]
-  for o in operands[1:]:
-    match opnum % n_ops:
-      case 0:
-        n += o
-      case 1:
-        n *= o
-      case 2:
-        n = int(str(n) + str(o))
+def can_satisfy(target: int, operands: list[int], use_concat: bool) -> bool:
+  match operands:
+    case [n]:
+      return n == target
+    case [a, b, *rest]:
+      if can_satisfy(target, [a+b, *rest], use_concat):
+        return True
+      if can_satisfy(target, [a*b, *rest], use_concat):
+        return True
+      if (use_concat
+          and can_satisfy(target, [int(str(a)+str(b)), *rest], use_concat)):
+        return True
 
-    opnum //= n_ops
-
-  return n
+  return False
 
 
-def total_satisfying(n_ops: int) -> int:
-  total = 0
+total1 = 0
+total2exclusive = 0
 
-  for (target, operands) in equations:
-    opnum = 0
-    while opnum < (n_ops ** len(operands)):
-      n = evaluate(operands, opnum, n_ops)
-      if n == target:
-        total += target
-        break
-      opnum += 1
-  
-  return total
+for (target, operands) in equations:
+  if can_satisfy(target, operands, False):
+    total1 += target
+  elif can_satisfy(target, operands, True):
+    total2exclusive += target
 
 
 # part 1
 
-print(total_satisfying(2))
+print(total1)
 
 # part 2
 
-print(total_satisfying(3))
+print(total1 + total2exclusive)
