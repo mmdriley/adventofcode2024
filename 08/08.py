@@ -66,6 +66,7 @@ for _, v in freqpositions.items():
 
 
 # part 1
+
 print(len(antinodes1))
 
 # part 2
