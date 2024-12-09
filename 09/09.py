@@ -5,11 +5,11 @@ with open('09.txt') as f:
 
 diskmap = [int(x) for x in list(l)]
 
+# freemap[i] comes right before filesmap[i]
 filesmap = diskmap[0::2]
-freemap = diskmap[1::2]
+freemap = [0] + diskmap[1::2]
 
 # freespace index -> file IDs to include, in order L->R
-
 moves: dict[int, list[int]] = defaultdict(list)
 
 # files that have been moved
@@ -25,7 +25,7 @@ for currentfile in reversed(range(0, len(filesmap))):
     if v >= currentfilelen:
       moves[i].append(currentfile)
       freemap[i] -= currentfilelen
-      freemap[currentfile-1] += currentfilelen
+      freemap[currentfile] += currentfilelen
 
       moved.add(currentfile)
 
@@ -38,7 +38,7 @@ disk: list[int|None] = [0] * filesmap[0]
 for i in range(1, len(filesmap)):
   for e in moves[i-1]:
     disk.extend([e] * filesmap[e])
-  disk.extend([None] * freemap[i-1])
+  disk.extend([None] * freemap[i])
   if i not in moved:
     disk.extend([i] * filesmap[i])
 
