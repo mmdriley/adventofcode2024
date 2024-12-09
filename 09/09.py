@@ -8,9 +8,6 @@ diskmap = [int(x) for x in list(l)]
 filesmap = diskmap[0::2]
 freemap = diskmap[1::2]
 
-print(filesmap)
-print(freemap)
-
 # freespace index -> file IDs to include, in order L->R
 
 moves: dict[int, list[int]] = defaultdict(list)
