@@ -9,11 +9,13 @@ grid = [['.'] * len(grid[0])] + grid + [['.'] * len(grid[0])]
 dirs = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 
 
-# returns: perimeter, sides, set of squares
-def fill(istart, jstart) -> tuple[int, set[tuple[int, int]]]:
+# returns: perimeter, number of sides, set of squares
+def fill(istart, jstart) -> tuple[int, int, set[tuple[int, int]]]:
   frontier = [(istart, jstart)]
   explored: set[tuple[int, int]] = set()
   perimeter = 0
+
+  fence_crossings: set[tuple[int, int, int, int]] = set()
 
   L = grid[istart][jstart]
   assert(L != '.')
@@ -32,15 +34,37 @@ def fill(istart, jstart) -> tuple[int, set[tuple[int, int]]]:
         frontier.append((i + di, j + dj))
       else:
         perimeter += 1
+        fence_crossings.add((i, j, i + di, j + dj))
 
     explored.add((i, j))
 
-  return perimeter, explored
+  sides = 0
 
+  # for every remaining segment of fence, count it as a side and remove
+  # all segments that are part of the same side.
+  while len(fence_crossings) > 0:
+    sides += 1
+
+    i1, j1, i2, j2 = fence_crossings.pop()
+    for di, dj in dirs:
+      while (i1 + di, j1 + dj, i2 + di, j2 + dj) in fence_crossings:
+        i1 += di
+        j1 += dj
+        i2 += di
+        j2 += dj
+
+      while (i1, j1, i2, j2) in fence_crossings:
+        fence_crossings.remove((i1, j1, i2, j2))
+        i1 -= di
+        j1 -= dj
+        i2 -= di
+        j2 -= dj
+
+  return perimeter, sides, explored
 
 
 seen: set[tuple[int, int]] = set()
-total_fence_cost = 0
+cost1 = cost2 = 0
 
 
 for i, l in enumerate(grid):
@@ -51,9 +75,16 @@ for i, l in enumerate(grid):
     if (i, j) in seen:
       continue
 
-    perimeter, region = fill(i, j)
+    perimeter, sides, region = fill(i, j)
     seen |= region
 
-    total_fence_cost += len(region) * perimeter
+    cost1 += len(region) * perimeter
+    cost2 += len(region) * sides
 
-print(total_fence_cost)
+# part 1
+
+print(cost1)
+
+# part 2
+
+print(cost2)
