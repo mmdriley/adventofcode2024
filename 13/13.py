@@ -29,6 +29,9 @@ def cost(solve: tuple[int, int]) -> int:
 # returns A presses, B presses
 @cache
 def mincostsolve(ax, ay, bx, by, prizeX, prizeY, max_presses) -> tuple[int, int]:
+  if max_presses <= 0:
+    return impossible_sentinel
+
   if prizeX < 0 or prizeY < 0:
     return impossible_sentinel
 
@@ -37,11 +40,11 @@ def mincostsolve(ax, ay, bx, by, prizeX, prizeY, max_presses) -> tuple[int, int]
   
   solve_a = solve_b = impossible_sentinel
 
-  aa, ab = mincostsolve(ax, ay, bx, by, prizeX - ax, prizeY - ay, max_presses)
+  aa, ab = mincostsolve(ax, ay, bx, by, prizeX - ax, prizeY - ay, max_presses - 1)
   if aa < max_presses and ab >= 0:
     solve_a = (aa + 1, ab)
 
-  ba, bb = mincostsolve(ax, ay, bx, by, prizeX - bx, prizeY - by, max_presses)
+  ba, bb = mincostsolve(ax, ay, bx, by, prizeX - bx, prizeY - by, max_presses - 1)
   if bb < max_presses and ba >= 0:
     solve_b = (ba, bb + 1)
 
@@ -57,8 +60,10 @@ def mincostsolve(ax, ay, bx, by, prizeX, prizeY, max_presses) -> tuple[int, int]
 
 spend1 = 0
 for ax, ay, bx, by, prizeX, prizeY in machines:
-  sa, sb = mincostsolve(ax, ay, bx, by, prizeX, prizeY, 100)
+  sa, sb = mincostsolve(ax, ay, bx, by, prizeX, prizeY, 200)
   if sa >= 0:
     spend1 += cost((sa, sb))
+
+    
 
 print(spend1)
