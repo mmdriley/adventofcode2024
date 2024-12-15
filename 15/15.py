@@ -1,6 +1,8 @@
-warehousemap: list[list[str]] = []
+import copy
 
-roboti = robotj = -1
+originalmap: list[list[str]] = []
+
+roboti_start = robotj_start = -1
 
 with open('15.txt') as f:
   for l in f:
@@ -8,11 +10,11 @@ with open('15.txt') as f:
     if l == '':
       break
 
-    warehousemap.append(list(l))
+    originalmap.append(list(l))
 
     if l.find('@') >= 0:
-      roboti = len(warehousemap) - 1
-      robotj = l.find('@')
+      roboti_start = len(originalmap) - 1
+      robotj_start = l.find('@')
 
   moves = f.read()
 
@@ -22,6 +24,9 @@ movedirs = {
   'v': (1, 0),
   '<': (0, -1),
 }
+
+warehousemap = copy.deepcopy(originalmap)
+roboti, robotj = roboti_start, robotj_start
 
 # print('\n'.join([''.join(l) for l in warehousemap]))
 
@@ -75,3 +80,27 @@ for i, l in enumerate(warehousemap):
       gpssum += i * 100 + j
 
 print(gpssum)
+
+# part 2
+
+warehousemap = copy.deepcopy(originalmap)
+
+replacements = {
+  '#': '##',
+  '.': '..',
+  '@': '@.',
+  'O': '[]',
+}
+
+for i in range(len(warehousemap)):
+  warehousemap[i] = sum([list(replacements[x]) for x in warehousemap[i]], [])
+
+# print('\n'.join([''.join(l) for l in warehousemap]))
+
+roboti, robotj = roboti_start, robotj_start * 2
+assert(warehousemap[roboti][robotj] == '@')
+
+# horizontal push is still pretty easy. vertical push is more challenging
+# `dryrun` so we can do two passes: pass 1, see if possible; pass 2, commit
+def pushvert(fromi, fromj, movedir, dryrun: bool) -> bool:
+  pass
