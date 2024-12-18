@@ -17,14 +17,10 @@ N = 71
 
 for x in range(N):
   for y in range(N):
-    for dx, dy in [(0, 1), (1, 0)]:
-      (outx, outy) = (x + dx, y + dy)
-      if outx < 0 or outy >= N:
-        continue
-      if outy < 0 or outy >= N:
-        continue
-
-      g.add_edge((x, y), (outx, outy))
+    if x + 1 < N:
+      g.add_edge((x, y), (x + 1, y))
+    if y + 1 < N:
+      g.add_edge((x, y), (x, y + 1))
 
 # part 1
 
