@@ -25,65 +25,75 @@ movedirs = {
   '<': (0, -1),
 }
 
-warehousemap = copy.deepcopy(originalmap)
-roboti, robotj = roboti_start, robotj_start
 
-# print('\n'.join([''.join(l) for l in warehousemap]))
+def runmap(warehousemap, moves, roboti, robotj):
+  warehousemap = copy.deepcopy(warehousemap)
 
-for m in moves:
-  assert(warehousemap[roboti][robotj] == '@')
-  if m == '\n':
-    continue
+  # print('\n'.join([''.join(l) for l in warehousemap]))
 
-  assert(m in movedirs)
+  for m in moves:
+    assert(warehousemap[roboti][robotj] == '@')
+    if m == '\n':
+      continue
 
-  movei, movej = movedirs[m]
-  nexti, nextj = roboti + movei, robotj + movej
+    assert(m in movedirs)
 
-  nextc = warehousemap[nexti][nextj]
+    movei, movej = movedirs[m]
+    nexti, nextj = roboti + movei, robotj + movej
 
-  if nextc == '#':
-    pass
-  else:
-    # going to move
-    if nextc == '.':
+    nextc = warehousemap[nexti][nextj]
+
+    if nextc == '#':
       pass
     else:
-      assert(nextc == 'O')
-      # trying to push one or more boxes
-      afteri, afterj = nexti, nextj
-
-      while warehousemap[afteri][afterj] == 'O':
-        afteri += movei
-        afterj += movej
-
-      if warehousemap[afteri][afterj] == '#':
-        continue  # can't push boxes into a wall
+      # going to move
+      if nextc == '.':
+        pass
       else:
-        assert(warehousemap[afteri][afterj] == '.')
-        warehousemap[afteri][afterj] = 'O'
-        warehousemap[nexti][nextj] = '.'
+        assert(nextc == 'O')
+        # trying to push one or more boxes
+        afteri, afterj = nexti, nextj
 
-    # do the move
-    assert(warehousemap[nexti][nextj] == '.')
-    warehousemap[roboti][robotj] = '.'
-    roboti, robotj = nexti, nextj
-    warehousemap[roboti][robotj] = '@'
+        while warehousemap[afteri][afterj] == 'O':
+          afteri += movei
+          afterj += movej
+
+        if warehousemap[afteri][afterj] == '#':
+          continue  # can't push boxes into a wall
+        else:
+          assert(warehousemap[afteri][afterj] == '.')
+          warehousemap[afteri][afterj] = 'O'
+          warehousemap[nexti][nextj] = '.'
+
+      # do the move
+      assert(warehousemap[nexti][nextj] == '.')
+      warehousemap[roboti][robotj] = '.'
+      roboti, robotj = nexti, nextj
+      warehousemap[roboti][robotj] = '@'
 
   # print(m)
   # print('\n'.join([''.join(l) for l in warehousemap]))
+  return warehousemap
 
-gpssum = 0
-for i, l in enumerate(warehousemap):
-  for j, c in enumerate(l):
-    if c == 'O':
-      gpssum += i * 100 + j
 
-print(gpssum)
+def gpssum(warehousemap):
+  gpssum = 0
+  for i, l in enumerate(warehousemap):
+    for j, c in enumerate(l):
+      if c == 'O':
+        gpssum += i * 100 + j
+
+  return gpssum
+
+
+# part 1
+
+part1map = runmap(originalmap, moves, roboti_start, robotj_start)
+print(gpssum(part1map))
 
 # part 2
 
-warehousemap = copy.deepcopy(originalmap)
+part2map = copy.deepcopy(originalmap)
 
 replacements = {
   '#': '##',
@@ -92,15 +102,10 @@ replacements = {
   'O': '[]',
 }
 
-for i in range(len(warehousemap)):
-  warehousemap[i] = sum([list(replacements[x]) for x in warehousemap[i]], [])
+for i in range(len(part2map)):
+  part2map[i] = sum([list(replacements[x]) for x in part2map[i]], [])
 
 # print('\n'.join([''.join(l) for l in warehousemap]))
 
 roboti, robotj = roboti_start, robotj_start * 2
-assert(warehousemap[roboti][robotj] == '@')
-
-# horizontal push is still pretty easy. vertical push is more challenging
-# `dryrun` so we can do two passes: pass 1, see if possible; pass 2, commit
-def pushvert(fromi, fromj, movedir, dryrun: bool) -> bool:
-  pass
+assert(part2map[roboti][robotj] == '@')
