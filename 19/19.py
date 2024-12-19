@@ -1,5 +1,4 @@
 from functools import cache
-import re2 as re
 
 designs = []
 
