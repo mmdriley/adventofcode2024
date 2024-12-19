@@ -58,7 +58,7 @@ candidates = [0]
 
 while len(candidates) > 0:
   c = heapq.heappop(candidates)
-  for newa in range(c, c + 64):
+  for newa in range(c, c+8):
     o = runprogram(program, newa, startb, startc)
 
     if o == program:
