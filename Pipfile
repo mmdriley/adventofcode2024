@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 networkx = {extras = ["default"], version = "*"}
 more-itertools = "*"
-google-re2 = "*"
 
 [dev-packages]
 
