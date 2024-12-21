@@ -25,8 +25,12 @@ movedirs = {
   '<': (0, -1),
 }
 
+
+BoxCoord = tuple[int, int]
+
 # (i, j) is a part of a box to be pushed by (di, dj)
-def pushbox(m: list[list[str]], boxi: int, boxj: int, di: int, dj: int) -> bool:
+# returns a list of boxes to move.
+def pushbox_moving(m: list[list[str]], boxi: int, boxj: int, di: int, dj: int) -> list[BoxCoord] | None:
   match m[boxi][boxj]:
     case 'O':
       old_coords = [(boxi, boxj)]
@@ -38,6 +42,10 @@ def pushbox(m: list[list[str]], boxi: int, boxj: int, di: int, dj: int) -> bool:
       old_coords = [(boxi, boxj-1), (boxi, boxj)]
     case _:
       raise ValueError()  # not a box
+
+  # note: have to start with a *copy* of old_coords, else
+  # we'll be appending to the list we're iterating over
+  moving = [c for c in old_coords]
 
   # make room for this box
   for oldi, oldj in old_coords:
@@ -52,23 +60,33 @@ def pushbox(m: list[list[str]], boxi: int, boxj: int, di: int, dj: int) -> bool:
       case ']' if dj == 1:
         assert(m[oldi][oldj] == '[')
       case '#':
-        return False  # hit a wall, return failure
-      case '[' | ']' | 'O' as boxchar:
+        return None  # hit a wall, return failure
+      case '[' | ']' | 'O':
         # We ignored the cases where boxes were pushing into themselves, so
         # this is pushing into a new box. Try pushing it.
-        if not pushbox(m, newi, newj, di, dj):
-          return False
-        assert(m[newi][newj] == '.')
+        match pushbox_moving(m, newi, newj, di, dj):
+          case None:
+            return None
+          case l:
+            moving.extend(l)
+
+  return moving
+
+
+def pushbox(m: list[list[str]], boxi: int, boxj: int, di: int, dj: int):
+  moving = pushbox_moving(m, boxi, boxj, di, dj)
+  if moving is None:
+    return False
 
   # take care to capture the old chars, erase the old coords,
   # then write the new ones, to avoid ever reading our own writes
   # within a loop
-  old_chars = [m[oldi][oldj] for (oldi, oldj) in old_coords]
+  old_chars = [m[oldi][oldj] for (oldi, oldj) in moving]
 
-  for (oldi, oldj) in old_coords:
+  for (oldi, oldj) in moving:
     m[oldi][oldj] = '.'
 
-  for ((oldi, oldj), c) in zip(old_coords, old_chars):
+  for ((oldi, oldj), c) in zip(moving, old_chars):
     newi = oldi + di
     newj = oldj + dj
 
@@ -103,10 +121,7 @@ def runmap(warehousemap, moves, roboti, robotj):
         pass
       else:
         assert(nextc in ['[', ']', 'O'])
-        mapafter = copy.deepcopy(warehousemap)
-        if pushbox(mapafter, nexti, nextj, movei, movej):
-          warehousemap = mapafter
-        else:
+        if not pushbox(warehousemap, nexti, nextj, movei, movej):
           continue  # can't push box
 
       # do the move
