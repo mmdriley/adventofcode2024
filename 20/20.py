@@ -5,7 +5,7 @@ mazemap: list[list[str]] = []
 starti, startj = -1, -1
 endi, endj = -1, -1
 
-with open('21.txt') as f:
+with open('20.txt') as f:
   for l in f:
     mazemap.append(list(l.strip()))
     if 'S' in l:
