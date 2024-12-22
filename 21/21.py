@@ -38,26 +38,31 @@ for i, n in enumerate(path):
   path_with_pos[n] = i
 
 
-def timesaved(startn: Pos, endn: Pos) -> int:
-  if startn not in path_with_pos or endn not in path_with_pos:
-    return 0
-  
-  return abs(path_with_pos[endn] - path_with_pos[startn])
+def distance(startn: Pos, endn: Pos) -> int:
+  (i1, j1) = startn
+  (i2, j2) = endn
+
+  return abs(i2 - i1) + abs(j2 - j1)
+
+
+Cheat = tuple[Pos, Pos]
+def ncheats(maxdist: int, minsaving: int) -> int:
+  n = 0
+  for begin in range(len(path)):
+    for end in range(begin + minsaving, len(path)):
+      d = distance(path[begin], path[end])
+      if d > maxdist:
+        continue
+      saving = (end - begin) - d
+      if saving >= minsaving:
+        n += 1
+  return n
 
 
 # part 1
 
-over100: int = 0
-for i, l in enumerate(mazemap):
-  for j, c in enumerate(l):
-    if c != '#':
-      continue
+print(ncheats(2, 100))
 
-    saved_v = timesaved((i + 1, j), (i - 1, j))
-    if saved_v > 100:
-      over100 += 1
-    saved_h = timesaved((i, j - 1), (i, j + 1))
-    if saved_h > 100:
-      over100 += 1
+# part 2
 
-print(over100)
+print(ncheats(20, 100))
