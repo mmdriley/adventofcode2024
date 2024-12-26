@@ -1,5 +1,5 @@
-from itertools import pairwise, product
-from typing import Iterator, Literal
+from functools import cache
+from itertools import pairwise
 
 doorcodes = []
 with open('21.txt') as f:
@@ -34,92 +34,85 @@ remote_positions = {
   '>': (1, 2),
 }
 
-# assumption: it will never be the right thing to interleave directions
-# when we can repeat the same direction
-def shortest_paths(startp, endp, gap) -> list[str]:
-  (starti, startj) = startp
-  (endi, endj) = endp
+@cache
+def all_moves(pos1, pos2, gap) -> list[str]:
+  if pos1 == gap:
+    return []
+
+  if pos1 == pos2:
+    return ['']
+
+  (i1, j1) = pos1
+  (i2, j2) = pos2
+
+  moves = []
+
+  if i1 < i2:
+    moves += ['v' + x for x in all_moves((i1 + 1, j1), pos2, gap)]
+  if i1 > i2:
+    moves += ['^' + x for x in all_moves((i1 - 1, j1), pos2, gap)]
+  if j1 < j2:
+    moves += ['>' + x for x in all_moves((i1, j1 + 1), pos2, gap)]
+  if j1 > j2:
+    moves += ['<' + x for x in all_moves((i1, j1 - 1), pos2, gap)]
   
-  vpath = ''
-  hpath = ''
-
-  i, j = starti, startj
-  while i < endi:
-    vpath += 'v'
-    i += 1
-  while i > endi:
-    vpath += '^'
-    i -= 1
-  while j < endj:
-    hpath += '>'
-    j += 1
-  while j > endj:
-    hpath += '<'
-    j -= 1
+  return moves
 
 
-  if hpath == '':
-    return [vpath]
-  elif vpath == '':
-    return [hpath]
-  elif (starti, endj) == gap:
-    return [vpath + hpath]
-  elif (endi, startj) == gap:
-    return [hpath + vpath]
+def all_keypad_moves(c1: str, c2: str) -> list[str]:
+  return all_moves(keypad_positions[c1], keypad_positions[c2], (3, 0))
+
+
+def all_remote_moves(c1: str, c2: str) -> list[str]:
+  return all_moves(remote_positions[c1], remote_positions[c2], (0, 0))
+
+
+# lowest cost way to push c2 after c1 at moveL, evaluated at maxL
+# assume everything > moveL starts at 'A'
+@cache
+def push_cost(c1, c2, pushL, maxL) -> int:
+  if pushL >= maxL:
+    return 1  # just push it
+
+  # push c2 after c1 at pushL means pushing remote buttons at pushL + 1
+  if pushL == 0:
+    potential_moves = all_keypad_moves(c1, c2)
   else:
-    return [vpath + hpath, hpath + vpath]
+    potential_moves = all_remote_moves(c1, c2)
 
-def keypad_paths_for_doorcode(doorcode) -> Iterator[str]:
-  paths = []
-  for (k1, k2) in pairwise('A' + doorcode):
-    paths.append(shortest_paths(keypad_positions[k1], keypad_positions[k2], (3, 0)))
-  for p in product(*paths):
-    yield 'A'.join(p) + 'A'
-
-
-def remote_paths_for_movements(movements) -> Iterator[str]:
-  paths = []
-  for (b1, b2) in pairwise('A' + movements):
-    paths.append(shortest_paths(remote_positions[b1], remote_positions[b2], (0, 0)))
-  for p in product(*paths):
-    yield 'A'.join(p) + 'A'
+  # at level pushL + 1, this means pushing these buttons then moving to 'A' and pressing it
+  costs = []
+  for m in potential_moves:
+    cost = 0
+    for (movec1, movec2) in pairwise('A' + m + 'A'):
+      cost += push_cost(movec1, movec2, pushL + 1, maxL)
+    costs.append(cost)
+  
+  return min(costs)
 
 
-def shortest(iter):
-  shortest_len = None
-  shortest_items = []
-  for it in iter:
-    if shortest_len is None or len(it) < shortest_len:
-      shortest_len = len(it)
-      shortest_items = [it]
-    elif len(it) == shortest_len:
-      shortest_items.append(it)
-    # else pass
-
-  return shortest_items
-
-
-def remote_recurse(movement, depth):
-  if depth == 0:
-    yield movement
-    return
-
-  for m in remote_recurse(movement, depth - 1):
-    yield from shortest(remote_paths_for_movements(m))
-
-
-def physical_keypad_options(doorcode, remote_depth):
-  for p1 in keypad_paths_for_doorcode(doorcode):
-    for m in remote_recurse(p1, remote_depth):
-      yield m
+def doorcode_cost(doorcode: str, n_remotes: int) -> int:
+  cost = 0
+  for (c1, c2) in pairwise('A' + doorcode):
+    cost += push_cost(c1, c2, 0, n_remotes)
+  return cost
 
 
 # part 1
 
-complexities = 0
+complexity = 0
 for c in doorcodes:
   n = int(c[:-1])
-  p = len(min(physical_keypad_options(c, 2), key=len))
-  complexities += n*p
+  complexity += n * doorcode_cost(c, 3)
 
-print(complexities)
+print(complexity)
+
+
+# part 2
+
+complexity = 0
+for c in doorcodes:
+  n = int(c[:-1])
+  complexity += n * doorcode_cost(c, 26)
+
+print(complexity)
